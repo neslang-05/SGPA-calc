@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SGPA Calculator</title>
+  <style>
+    body {
+
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    table {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 15px;
+      text-align: left;
+    }
+    th {
+      background-color: #e9ecef;
+      font-weight: bold;
+    }
+    td {
+      border-bottom: 1px solid #ddd;
+    }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    p#sgpaResult {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+      color: #007bff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>SGPA Calculator</h1>
+
+  <table id="courseTable">
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Credit</th>
+        <th>Grade (Letter)</th>
+        <th>Grade (Point)</th>
+        <th>Credit x Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" id="courseName1" value="Course 1"></td>
+        <td><input type="number" id="credit1" min="1" oninput="updateCreditGrade(1)"></td>
+        <td>
+          <select id="gradeLetter1" onchange="updateGradePoint(1)">
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="F">F</option>
+          </select>
+        </td>
+        <td><input type="number" id="gradePoint1" readonly></td> 
+        <td><span id="creditGrade1"></span></td> 
+      </tr>
+     </tbody>
+  </table> 
+
+  <div style="text-align: center;">
+    <button onclick="addCourse()">Add Course</button>
+    <button onclick="calculateSGPA()">Calculate SGPA</button>
+  </div>
+
+  <p id="sgpaResult"></p>
+
+  <script>
+    let courseTable = document.getElementById("courseTable").getElementsByTagName("tbody")[0];
+    let sgpaResult = document.getElementById("sgpaResult");
+
+    function addCourse() {
+      let row = courseTable.insertRow();
+      let courseCell = row.insertCell();
+      let creditCell = row.insertCell();
+      let gradeLetterCell = row.insertCell();
+      let gradePointCell = row.insertCell();
+      let creditGradeCell = row.insertCell();
+
+      let rowNum = courseTable.rows.length;
+      courseCell.innerHTML = `<input type="text" id="courseName${rowNum}" value="Course ${rowNum}">`;
+      creditCell.innerHTML = `<input type="number" id="credit${rowNum}" min="1" oninput="updateCreditGrade(${rowNum})">`;
+      gradeLetterCell.innerHTML = `<select id="gradeLetter${rowNum}" onchange="updateGradePoint(${rowNum})">
+                                      <option value="A+">A+</option>
+                                      <option value="A">A</option>
+                                      <option value="B+">B+</option>
+                                      <option value="B">B</option>
+                                      <option value="C">C</option>
+                                      <option value="D">D</option>
+                                      <option value="F">F</option>
+                                    </select>`;
+      gradePointCell.innerHTML = `<input type="number" id="gradePoint${rowNum}" readonly>`;
+      creditGradeCell.innerHTML = `<span id="creditGrade${rowNum}"></span>`;
+    }
+
+    function updateGradePoint(rowNum) {
+      let gradeLetter = document.getElementById(`gradeLetter${rowNum}`).value;
+      let gradePoint = document.getElementById(`gradePoint${rowNum}`);
+      let gradeValue = 0;
+
+      switch (gradeLetter) {
+        case "A+":
+          gradeValue = 10;
+          break;
+        case "A":
+          gradeValue = 9;
+          break;
+        case "B+":
+          gradeValue = 8;
+          break;
+        case "B":
+          gradeValue = 7;
+          break;
+        case "C":
+          gradeValue = 6;
+          break;
+        case "D":
+          gradeValue = 5;
+          break;
+        case "F":
+          gradeValue = 0;
+          break;
+      }
+
+      gradePoint.value = gradeValue;
+
+      // Update Credit x Grade
+      updateCreditGrade(rowNum);
+    }
+
+    function updateCreditGrade(rowNum) {
+      let credit = parseInt(document.getElementById(`credit${rowNum}`).value) || 0;
+      let gradePoint = parseInt(document.getElementById(`gradePoint${rowNum}`).value) || 0;
+      document.getElementById(`creditGrade${rowNum}`).textContent = credit * gradePoint; 
+    }
+
+    function calculateSGPA() {
+      let totalCredits = 0;
+      let totalCreditGrade = 0;
+
+      for (let i = 1; i <= courseTable.rows.length; i++) {
+        let credit = parseInt(document.getElementById(`credit${i}`).value) || 0;
+        let creditGrade = parseInt(document.getElementById(`creditGrade${i}`).textContent) || 0;
+
+        totalCredits += credit;
+        totalCreditGrade += creditGrade;
+      }
+
+      let sgpa = totalCredits > 0 ? (totalCreditGrade / totalCredits).toFixed(2) : 0;
+      sgpaResult.textContent = `Your SGPA is: ${sgpa}`;
+    }
+
+    // Add a course initially so the table isn't empty
+    addCourse();
+  </script>
+
+</body>
+</html>
